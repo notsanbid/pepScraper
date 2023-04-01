@@ -1,0 +1,1 @@
+import java.io.*;/r/n import java.util.*;/r/n public class main {/r/n public static void main(String[] args) {/r/n Scanner scn = new Scanner(System.in);/r/n int n = scn.nextInt();/r/n int fn = 0;/r/n int sn = 1;/r/n while(fn <= n){/r/n System.out.print(fn + " ");/r/n int tn = fn + sn;/r/n fn = sn;/r/n sn = tn;/r/n }/r/n }/r/n }

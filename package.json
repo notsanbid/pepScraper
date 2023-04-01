@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "minimist": "^1.2.8",
+    "node-fetch": "^3.3.1",
     "pdf-lib": "^1.17.1",
     "puppeteer": "^19.8.0"
   },
@@ -21,5 +22,6 @@
     "url": "https://github.com/notsanbid/pepScraper/issues"
   },
   "homepage": "https://github.com/notsanbid/pepScraper#readme",
-  "description": ""
+  "description": "",
+  "type": "module"
 }

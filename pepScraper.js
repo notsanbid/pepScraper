@@ -1,9 +1,10 @@
-// node pepScraper.js --url="https://pepcoding.com/resources/online-java-foundation"
+// node pepScraper.js --url="https://pepcoding.com/resources/data-structures-and-algorithms-in-java-levelup" --type="topic"
 
-let minimist = require("minimist");
-let puppeteer = require("puppeteer");
-let fs = require("fs");
-let path = require("path");
+import minimist from 'minimist';
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
+import fetch from 'node-fetch';
 let args = minimist(process.argv);
 let qCnt = 1;
 
@@ -63,17 +64,26 @@ async function run() {
 async function handlePage(browser, url, folderName) {
     let npage = await browser.newPage();
     await npage.goto(url);
+    let questions;
+
 
     try {
-        await npage.waitForSelector("li[resource-type='ojquestion'] a", {timeout: 5000});
-        const questions = await npage.evaluate(() => Array.from(document.querySelectorAll("li[resource-type='ojquestion'] a"), element => element.href.trim()));
-        
-        for (let i = 0; i < questions.length; i++) {
-            await handleQuestion(browser, questions[i], folderName);
+        if(args.type === 'ojquestion' || args.type === 'solution' ){
+            await npage.waitForSelector("li[resource-type='ojquestion'] a", {timeout: 5000});
+            questions = await npage.evaluate(() => Array.from(document.querySelectorAll("li[resource-type='ojquestion'] a"), element => element.href.trim()));
+        } else if(args.type === 'topic'){
+            await npage.waitForSelector("li[resource-type='topic'] a", {timeout: 5000});
+            questions = await npage.evaluate(() => Array.from(document.querySelectorAll("li[resource-type='topic'] a"), element => element.href.trim()));
         }
-    
-        }   catch (e) {
-            
+        for (let i = 0; i < questions.length; i++) {
+            if(args.type === 'solution' )
+                await handleSolution(browser, questions[i], folderName);
+            else 
+                await handleQuestion(browser, questions[i], folderName);
+        }
+    }
+    catch(err) {
+
     }
     
     await npage.close();
@@ -88,7 +98,6 @@ async function handleQuestion(browser, url, folderName) {
     qName = qName.substring(qName.lastIndexOf('/')+1).replace(/[^a-zA-Z0-9-\s]+/g, '');
     let fileName = qCnt+'. '+qName+'.mhtml';
     fileName = path.join(folderName, fileName);
-    console.log(fileName);
     
     await npage.waitForTimeout(2000);
 
@@ -96,6 +105,33 @@ async function handleQuestion(browser, url, folderName) {
     const { data } = await cdp.send('Page.captureSnapshot', { format: 'mhtml' });
     fs.writeFileSync(fileName, data);
 
+    qCnt++;
+    
+    await npage.close();
+}
+
+async function handleSolution(browser, url, folderName) {
+    let npage = await browser.newPage();
+    await npage.goto(url);
+
+    //question name
+    let qName = url.substring(0, url.lastIndexOf('/'));
+    qName = qName.substring(qName.lastIndexOf('/')+1).replace(/[^a-zA-Z0-9-\s]+/g, '');
+    let fileName = qCnt+'. '+qName+'.java';
+    fileName = path.join(folderName, fileName);
+
+    const element = await npage.$('input[name="resourceId"]');
+    const value = await element.evaluate(node => node.value);
+    let solutionURL = "https://pepcoding.com/question/solution/"+value;
+
+    
+    await npage.goto(solutionURL);
+    let response = await npage.$('pre');
+    let data = await response.evaluate(node => node.textContent);
+    let jso = JSON.parse(JSON.parse(data));
+    let java = jso.java.code.trim();
+    fs.writeFileSync(fileName, java);
+    
     qCnt++;
     
     await npage.close();
