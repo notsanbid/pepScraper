@@ -13,7 +13,9 @@ Scraped .mhtml files can be viewed using Microsoft Edge
 3. When inside pepScraper folder, do: 
    > npm install
 4. Add your pepcoding account's email ID [here](https://github.com/notsanbid/pepScraper/blob/main/pepScraper.js#L31)
+   > Replace "xyz@gmail.com" with your own email here: `await page.type("input[name='email']", "xyz@gmail.com", { delay: 50 });` 
 5. Similarly, add password [here](https://github.com/notsanbid/pepScraper/blob/main/pepScraper.js#L35)
+   > Replace "123" with your own password here: `await page.type("input[name='password']", "123", { delay: 50 });` 
 6. Provide the url of the 'level' and 'type' of resource you want to scrape 
    > Level 1 URL: https://pepcoding.com/resources/online-java-foundation <br />
    > Level 2 URL: https://pepcoding.com/resources/data-structures-and-algorithms-in-java-levelup <br />
